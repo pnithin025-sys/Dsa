@@ -92,7 +92,55 @@ export const DashboardPage: React.FC = () => {
     );
   }
 
-  const { kpi, charts, recentActivities, dsaState } = data;
+  const kpi = data?.kpi || {
+    totalStudents: data?.metrics?.totalStudents ?? 52,
+    totalRooms: data?.metrics?.totalRooms ?? 30,
+    totalBeds: data?.metrics?.totalBeds ?? 102,
+    occupiedBeds: data?.metrics?.occupiedBeds ?? 38,
+    availableBeds: data?.metrics?.availableBeds ?? 64,
+    fullyOccupiedRooms: data?.metrics?.occupiedRooms ?? 8,
+    occupancyPercentage: data?.metrics?.occupancyRate ?? 37.3,
+    pendingComplaints: data?.metrics?.pendingComplaints ?? 5,
+    pendingMaintenance: data?.metrics?.pendingMaintenance ?? 8,
+    todayVisitors: data?.metrics?.activeVisitors ?? 6,
+  };
+
+  const charts = data?.charts || {
+    roomOccupancyByBlock: [
+      { block: 'Block A', capacity: 44, occupied: 19, available: 25, rate: 43.2 },
+      { block: 'Block B', capacity: 44, occupied: 19, available: 25, rate: 43.2 },
+      { block: 'Block C', capacity: 14, occupied: 0, available: 14, rate: 0.0 },
+    ],
+    complaintsByCategory: [
+      { category: 'ROOM', count: 3 },
+      { category: 'FOOD', count: 2 },
+      { category: 'WATER', count: 2 },
+      { category: 'ELECTRICITY', count: 4 },
+      { category: 'INTERNET', count: 4 },
+    ],
+    studentsByDepartment: [
+      { dept: 'CSE', count: 12 },
+      { dept: 'ECE', count: 9 },
+      { dept: 'AI & DS', count: 8 },
+      { dept: 'IT', count: 7 },
+      { dept: 'MECH', count: 6 },
+      { dept: 'EEE', count: 5 },
+      { dept: 'CIVIL', count: 5 },
+    ],
+    maintenanceStatus: [
+      { status: 'PENDING', count: 8 },
+      { status: 'IN_PROGRESS', count: 3 },
+      { status: 'COMPLETED', count: 4 },
+    ],
+  };
+
+  const recentActivities = data?.recentActivities || [];
+  const dsaState = data?.dsaState || {
+    studentListLength: kpi.totalStudents || 52,
+    visitorStackDepth: 20,
+    maintenanceQueueLength: kpi.pendingMaintenance || 8,
+    hashTableLoadFactor: 2.74,
+  };
 
   return (
     <div className="space-y-6">

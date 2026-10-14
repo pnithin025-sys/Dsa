@@ -530,20 +530,53 @@ export const mockDsaBackend = {
       return {
         success: true,
         data: {
-          metrics: {
+          kpi: {
             totalStudents,
             totalRooms,
-            occupiedRooms,
-            availableBeds,
             totalBeds,
-            occupancyRate: Math.round((occupiedBeds / totalBeds) * 100),
-            activeVisitors,
+            occupiedBeds,
+            availableBeds,
+            fullyOccupiedRooms: occupiedRooms,
+            occupancyPercentage: totalBeds > 0 ? Number(((occupiedBeds / totalBeds) * 100).toFixed(1)) : 0,
             pendingComplaints,
             pendingMaintenance: mQueue.size(),
+            todayVisitors: activeVisitors,
           },
-          nextPendingMaintenance,
+          charts: {
+            roomOccupancyByBlock: [
+              { block: 'Block A', capacity: 44, occupied: 19, available: 25, rate: 43.2 },
+              { block: 'Block B', capacity: 44, occupied: 19, available: 25, rate: 43.2 },
+              { block: 'Block C', capacity: 14, occupied: 0, available: 14, rate: 0.0 },
+            ],
+            complaintsByCategory: [
+              { category: 'ROOM', count: 3 },
+              { category: 'FOOD', count: 2 },
+              { category: 'WATER', count: 2 },
+              { category: 'ELECTRICITY', count: 4 },
+              { category: 'INTERNET', count: 4 },
+            ],
+            studentsByDepartment: [
+              { dept: 'CSE', count: 12 },
+              { dept: 'ECE', count: 9 },
+              { dept: 'AI & DS', count: 8 },
+              { dept: 'IT', count: 7 },
+              { dept: 'MECH', count: 6 },
+              { dept: 'EEE', count: 5 },
+              { dept: 'CIVIL', count: 5 },
+            ],
+            maintenanceStatus: [
+              { status: 'PENDING', count: mQueue.size() },
+              { status: 'IN_PROGRESS', count: 3 },
+              { status: 'COMPLETED', count: 4 },
+            ],
+          },
           recentActivities,
-          queueSize: mQueue.size(),
+          dsaState: {
+            studentListLength: totalStudents,
+            visitorStackDepth: db.visitors.length,
+            maintenanceQueueLength: mQueue.size(),
+            hashTableLoadFactor: Number((totalStudents / 19).toFixed(2)),
+          },
         },
       };
     }
@@ -1159,7 +1192,8 @@ export const mockDsaBackend = {
 
     // 12. Notifications
     if (cleanUrl === '/notifications' && method.toUpperCase() === 'GET') {
-      return { success: true, notifications: db.notifications };
+      const unreadCount = db.notifications.filter((n: any) => !n.isRead).length;
+      return { success: true, data: db.notifications, notifications: db.notifications, unreadCount };
     }
 
     if (cleanUrl === '/notifications/all/read' && method.toUpperCase() === 'PUT') {

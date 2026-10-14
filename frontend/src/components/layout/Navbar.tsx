@@ -53,8 +53,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     try {
       const res = await api.get('/notifications');
       if (res.data.success) {
-        setNotifications(res.data.data);
-        setUnreadCount(res.data.unreadCount);
+        const notifs = res.data.data || res.data.notifications || [];
+        setNotifications(Array.isArray(notifs) ? notifs : []);
+        setUnreadCount(res.data.unreadCount ?? (Array.isArray(notifs) ? notifs.filter((n: any) => !n.isRead).length : 0));
       }
     } catch (err) {
       // ignore silently
