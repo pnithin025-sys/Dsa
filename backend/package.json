@@ -5,11 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "postinstall": "prisma generate"
   },
   "keywords": ["dsa", "hostel-management", "express", "prisma"],
   "dependencies": {

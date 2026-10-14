@@ -2,7 +2,7 @@ import axios from 'axios';
 import { mockDsaBackend } from './mockDsaBackend';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://backend-alpha-three-22.vercel.app/api',
   headers: {
     'Content-Type': 'application/json',
   },
