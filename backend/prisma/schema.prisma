@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("WARDEN") // ADMIN, WARDEN
+  phone     String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HostelBlock {
+  id          String   @id @default(uuid())
+  name        String   @unique // Block A, Block B, Block C
+  genderType  String   // BOYS, GIRLS, COED
+  totalFloors Int      @default(3)
+  description String?
+  floors      Floor[]
+  rooms       Room[]
+  createdAt   DateTime @default(now())
+}
+
+model Floor {
+  id          String      @id @default(uuid())
+  floorNumber Int
+  name        String      // Floor 1, Floor 2, Floor 3
+  blockId     String
+  block       HostelBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  rooms       Room[]
+}
+
+model Room {
+  id            String      @id @default(uuid())
+  roomNumber    String      @unique // A-101, B-201
+  capacity      Int         @default(4)
+  occupiedBeds  Int         @default(0)
+  availableBeds Int         @default(4)
+  roomType      String      @default("NON_AC") // AC, NON_AC, DELUXE
+  status        String      @default("AVAILABLE") // AVAILABLE, PARTIALLY_OCCUPIED, FULL, MAINTENANCE
+  blockId       String
+  block         HostelBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  floorId       String
+  floor         Floor       @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  beds          Bed[]
+  students      Student[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Bed {
+  id         String   @id @default(uuid())
+  bedNumber  Int      // 1, 2, 3, 4
+  isOccupied Boolean  @default(false)
+  roomId     String
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  student    Student?
+}
+
+model Student {
+  id            String    @id @default(uuid())
+  studentId     String    @unique // STU1001
+  name          String
+  regNumber     String    @unique // REG2024001
+  department    String    // CSE, ECE, EEE, MECH, CIVIL, IT, AI & DS
+  year          Int       @default(1) // 1, 2, 3, 4
+  gender        String    // MALE, FEMALE, OTHER
+  phone         String
+  email         String    @unique
+  address       String
+  parentName    String
+  parentContact String
+  admissionDate DateTime  @default(now())
+  status        String    @default("ACTIVE") // ACTIVE, VACATED, SUSPENDED
+
+  blockId       String?
+  roomId        String?
+  room          Room?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  bedId         String?   @unique
+  bed           Bed?      @relation(fields: [bedId], references: [id], onDelete: SetNull)
+
+  visitors      Visitor[]
+  complaints    Complaint[]
+  maintenanceRequests MaintenanceRequest[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Visitor {
+  id           String    @id @default(uuid())
+  visitorId    String    @unique // VIS101
+  name         String
+  studentId    String
+  studentName  String
+  phone        String
+  relationship String
+  purpose      String
+  entryTime    DateTime  @default(now())
+  exitTime     DateTime?
+  status       String    @default("INSIDE") // INSIDE, EXITED
+  student      Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+}
+
+model Complaint {
+  id          String   @id @default(uuid())
+  complaintId String   @unique // CMP101
+  studentId   String
+  studentName String
+  category    String   // ROOM, FOOD, CLEANING, WATER, ELECTRICITY, INTERNET, SECURITY, OTHER
+  description String
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  status      String   @default("SUBMITTED") // SUBMITTED, UNDER_REVIEW, IN_PROGRESS, RESOLVED, REJECTED
+  student     Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MaintenanceRequest {
+  id          String    @id @default(uuid())
+  requestId   String    @unique // MNT101
+  studentId   String?
+  studentName String?
+  roomNumber  String
+  category    String    // ELECTRICAL, PLUMBING, FURNITURE, INTERNET, CLEANING, OTHER
+  description String
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  submittedAt DateTime  @default(now())
+  completedAt DateTime?
+  student     Student?  @relation(fields: [studentId], references: [id], onDelete: SetNull)
+}
+
+model Facility {
+  id          String         @id @default(uuid())
+  code        String         @unique // HOSTEL_A, MESS, LIBRARY, etc.
+  name        String
+  category    String         // ACCOMMODATION, DINING, ACADEMIC, RECREATION, HEALTHCARE, SERVICES, SECURITY
+  description String?
+  xCoord      Float          // X coordinate on campus map layout
+  yCoord      Float          // Y coordinate on campus map layout
+  edgesSource FacilityEdge[] @relation("SourceFacility")
+  edgesTarget FacilityEdge[] @relation("TargetFacility")
+}
+
+model FacilityEdge {
+  id               String   @id @default(uuid())
+  sourceFacilityId String
+  sourceFacility   Facility @relation("SourceFacility", fields: [sourceFacilityId], references: [id], onDelete: Cascade)
+  targetFacilityId String
+  targetFacility   Facility @relation("TargetFacility", fields: [targetFacilityId], references: [id], onDelete: Cascade)
+  distanceMeters   Int      @default(50)
+  pathwayType      String   @default("PAVED_WALKWAY") // PAVED_WALKWAY, ROAD, INDOOR_CORRIDOR
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, WARNING, ALERT, SUCCESS
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  action      String   // ROOM_ALLOCATED, VISITOR_ENTRY, COMPLAINT_FILED, MAINTENANCE_COMPLETED, etc.
+  details     String
+  entityType  String?
+  entityId    String?
+  performedBy String   @default("System")
+  createdAt   DateTime @default(now())
+}

@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+*/node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+*/dist/
+build/
+*/build/
+.output/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# SQLite Database & Prisma generated files
+*.db
+*.db-journal
+backend/prisma/*.db
+backend/prisma/*.db-journal
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# TypeScript / Vite cache
+*.tsbuildinfo
+.vite/
+*/.vite/
