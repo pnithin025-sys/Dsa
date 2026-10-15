@@ -13,7 +13,6 @@ import {
   allocateStudent,
   vacateStudent,
   updateRoomStatus,
-  deleteRoom,
 } from '../controllers/roomController';
 import {
   getAllVisitors,
@@ -71,7 +70,6 @@ router.get('/rooms/:id', authenticateToken, getRoomById);
 router.post('/rooms/allocate', authenticateToken, allocateStudent);
 router.post('/rooms/vacate', authenticateToken, vacateStudent);
 router.put('/rooms/:id', authenticateToken, updateRoomStatus);
-router.delete('/rooms/:id', authenticateToken, deleteRoom);
 
 // 5. Visitors (Stack)
 router.get('/visitors', authenticateToken, getAllVisitors);

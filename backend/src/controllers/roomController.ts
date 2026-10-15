@@ -148,29 +148,3 @@ export const updateRoomStatus = async (req: Request, res: Response): Promise<voi
   }
 };
 
-export const deleteRoom = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const room = await prisma.room.findFirst({
-      where: { OR: [{ id: String(id) }, { roomNumber: String(id) }] },
-    });
-    if (!room) {
-      res.status(404).json({ success: false, message: 'Room not found.' });
-      return;
-    }
-    // Vacate any students in room first
-    await prisma.student.updateMany({
-      where: { roomId: room.id },
-      data: { roomId: null, bedId: null },
-    });
-    // Delete beds
-    await prisma.bed.deleteMany({ where: { roomId: room.id } });
-    // Delete room
-    await prisma.room.delete({ where: { id: room.id } });
-
-    res.json({ success: true, message: `Room ${room.roomNumber} deleted successfully.` });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to delete room.' });
-  }
-};
-

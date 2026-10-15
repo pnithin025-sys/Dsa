@@ -722,27 +722,6 @@ export const mockDsaBackend = {
       return { success: true, room: r };
     }
 
-    if (cleanUrl.startsWith('/rooms/') && method.toUpperCase() === 'DELETE') {
-      const id = cleanUrl.replace('/rooms/', '');
-      const idx = db.rooms.findIndex((r: any) => r.id === id || r.roomNumber === id);
-      if (idx !== -1) {
-        const rm = db.rooms[idx];
-        db.students.forEach((s: any) => {
-          if (s.roomId === rm.id) {
-            s.roomId = null;
-            s.bedId = null;
-            s.room = null;
-            s.bed = null;
-          }
-        });
-        db.beds = db.beds.filter((b: any) => b.roomId !== rm.id);
-        db.rooms.splice(idx, 1);
-        saveDb(db);
-        return { success: true, message: `Room ${rm.roomNumber} deleted successfully` };
-      }
-      return { success: false, message: 'Room not found' };
-    }
-
     if (cleanUrl === '/rooms/allocate' && method.toUpperCase() === 'POST') {
       const { studentId, roomId, bedId } = data || {};
       const student = db.students.find((s: any) => s.id === studentId);
