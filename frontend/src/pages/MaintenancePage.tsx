@@ -13,6 +13,7 @@ import {
   Building,
   User,
   X,
+  Trash2,
 } from 'lucide-react';
 import api from '../services/api';
 import { MaintenanceRequest } from '../types';
@@ -93,6 +94,19 @@ export const MaintenancePage: React.FC = () => {
       }
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to submit request.');
+    }
+  };
+
+  const handleDeleteMaintenance = async (id: string, requestId?: string) => {
+    if (!confirm(`Are you sure you want to delete maintenance ticket ${requestId || id}?`)) return;
+    try {
+      const res = await api.delete(`/maintenance/${id}`);
+      if (res.data.success) {
+        setOperationLog({ message: res.data.message || 'Maintenance request deleted successfully.' });
+        fetchMaintenance();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete maintenance request.');
     }
   };
 
@@ -316,6 +330,7 @@ export const MaintenancePage: React.FC = () => {
                 <th className="py-3 px-4">Priority</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">Logged At</th>
+                <th className="py-3 px-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -353,6 +368,15 @@ export const MaintenancePage: React.FC = () => {
                   </td>
                   <td className="py-3 px-4 text-slate-400">
                     {new Date(r.submittedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                  </td>
+                  <td className="py-3 px-4 text-right whitespace-nowrap">
+                    <button
+                      onClick={() => handleDeleteMaintenance(r.id, r.requestId)}
+                      title="Delete Maintenance Request"
+                      className="p-1 rounded hover:bg-rose-50 text-rose-500 hover:text-rose-700 transition-colors inline-flex items-center"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}

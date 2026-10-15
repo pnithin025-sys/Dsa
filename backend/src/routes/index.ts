@@ -13,22 +13,26 @@ import {
   allocateStudent,
   vacateStudent,
   updateRoomStatus,
+  deleteRoom,
 } from '../controllers/roomController';
 import {
   getAllVisitors,
   recordVisitorEntry,
   recordVisitorExit,
+  deleteVisitor,
 } from '../controllers/visitorController';
 import {
   getAllMaintenanceRequests,
   createMaintenanceRequest,
   processNextMaintenanceRequest,
   updateMaintenanceStatus,
+  deleteMaintenanceRequest,
 } from '../controllers/maintenanceController';
 import {
   getAllComplaints,
   createComplaint,
   updateComplaintStatus,
+  deleteComplaint,
 } from '../controllers/complaintController';
 import { getHostelStructure } from '../controllers/hostelController';
 import { getAllFacilities, navigateRoute, exploreDfs } from '../controllers/facilityController';
@@ -67,22 +71,26 @@ router.get('/rooms/:id', authenticateToken, getRoomById);
 router.post('/rooms/allocate', authenticateToken, allocateStudent);
 router.post('/rooms/vacate', authenticateToken, vacateStudent);
 router.put('/rooms/:id', authenticateToken, updateRoomStatus);
+router.delete('/rooms/:id', authenticateToken, deleteRoom);
 
 // 5. Visitors (Stack)
 router.get('/visitors', authenticateToken, getAllVisitors);
 router.post('/visitors', authenticateToken, recordVisitorEntry);
 router.put('/visitors/:id/exit', authenticateToken, recordVisitorExit);
+router.delete('/visitors/:id', authenticateToken, deleteVisitor);
 
 // 6. Maintenance (Queue FIFO)
 router.get('/maintenance', authenticateToken, getAllMaintenanceRequests);
 router.post('/maintenance', authenticateToken, createMaintenanceRequest);
 router.post('/maintenance/process-next', authenticateToken, processNextMaintenanceRequest);
 router.put('/maintenance/:id', authenticateToken, updateMaintenanceStatus);
+router.delete('/maintenance/:id', authenticateToken, deleteMaintenanceRequest);
 
 // 7. Complaints
 router.get('/complaints', authenticateToken, getAllComplaints);
 router.post('/complaints', authenticateToken, createComplaint);
 router.put('/complaints/:id', authenticateToken, updateComplaintStatus);
+router.delete('/complaints/:id', authenticateToken, deleteComplaint);
 
 // 8. Hostel Structure (Tree)
 router.get('/hostel/structure', authenticateToken, getHostelStructure);

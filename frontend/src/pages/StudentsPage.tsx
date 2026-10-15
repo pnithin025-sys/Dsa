@@ -248,14 +248,34 @@ export const StudentsPage: React.FC = () => {
             />
           </div>
 
-          {/* Add Student Button */}
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="w-full sm:w-auto px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Student (Insert Node)</span>
-          </button>
+          {/* Action Buttons: Add Student and Allocate Room */}
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => {
+                const unallocated = students.find((s) => !s.room);
+                if (unallocated) {
+                  setShowAllocateModal(unallocated);
+                } else if (students.length > 0) {
+                  setShowAllocateModal(students[0]);
+                } else {
+                  alert('No students available for room allocation. Please add a student first.');
+                }
+                setAllocationResult(null);
+              }}
+              className="flex-1 sm:flex-none px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-emerald-200" />
+              <span>Allocate Room (Algorithm)</span>
+            </button>
+
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex-1 sm:flex-none px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Student (Insert Node)</span>
+            </button>
+          </div>
         </div>
 
         {/* Filter & Sorting Controls */}
@@ -416,13 +436,26 @@ export const StudentsPage: React.FC = () => {
                       </button>
 
                       {student.room ? (
-                        <button
-                          onClick={() => handleVacateRoom(student.studentId)}
-                          title="Vacate Bed"
-                          className="p-1 rounded hover:bg-amber-50 text-amber-600 hover:text-amber-800"
-                        >
-                          <DoorOpen className="w-4 h-4" />
-                        </button>
+                        <>
+                          <button
+                            onClick={() => {
+                              setShowAllocateModal(student);
+                              setAllocationResult(null);
+                            }}
+                            title="Reallocate / Change Room"
+                            className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded text-[11px] inline-flex items-center gap-1"
+                          >
+                            <Building className="w-3 h-3" />
+                            <span>Reallocate</span>
+                          </button>
+                          <button
+                            onClick={() => handleVacateRoom(student.studentId)}
+                            title="Vacate Bed"
+                            className="p-1 rounded hover:bg-amber-50 text-amber-600 hover:text-amber-800"
+                          >
+                            <DoorOpen className="w-4 h-4" />
+                          </button>
+                        </>
                       ) : (
                         <button
                           onClick={() => {
@@ -430,16 +463,17 @@ export const StudentsPage: React.FC = () => {
                             setAllocationResult(null);
                           }}
                           title="Run Room Allocation Algorithm"
-                          className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded text-[11px]"
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded text-[11px] shadow-xs inline-flex items-center gap-1 transition-colors"
                         >
-                          Allocate
+                          <Sparkles className="w-3 h-3 text-emerald-200" />
+                          <span>Allocate Room</span>
                         </button>
                       )}
 
                       <button
                         onClick={() => handleDeleteStudent(student.id, student.name)}
                         title="Delete Student"
-                        className="p-1 rounded hover:bg-rose-50 text-slate-400 hover:text-rose-600"
+                        className="p-1 rounded hover:bg-rose-50 text-rose-500 hover:text-rose-700 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -707,6 +741,24 @@ export const StudentsPage: React.FC = () => {
 
             {!allocationResult ? (
               <div className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1">Target Student</label>
+                  <select
+                    value={showAllocateModal.id}
+                    onChange={(e) => {
+                      const found = students.find((s) => s.id === e.target.value);
+                      if (found) setShowAllocateModal(found);
+                    }}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium"
+                  >
+                    {students.map((st) => (
+                      <option key={st.id} value={st.id}>
+                        {st.name} ({st.studentId}) — {st.department} {st.room ? `[Allocated: ${st.room.roomNumber}]` : '[Unallocated]'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">Target Hostel Block</label>
                   <select

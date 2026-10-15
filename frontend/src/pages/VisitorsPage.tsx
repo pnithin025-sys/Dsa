@@ -12,6 +12,7 @@ import {
   Shield,
   X,
   ArrowDown,
+  Trash2,
 } from 'lucide-react';
 import api from '../services/api';
 import { Visitor } from '../types';
@@ -106,6 +107,19 @@ export const VisitorsPage: React.FC = () => {
       }
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to record exit.');
+    }
+  };
+
+  const handleDeleteVisitor = async (visitorId: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete visitor log for "${name}"?`)) return;
+    try {
+      const res = await api.delete(`/visitors/${visitorId}`);
+      if (res.data.success) {
+        setToastNotice(res.data.message || 'Visitor record deleted successfully.');
+        fetchVisitors();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete visitor log.');
     }
   };
 
@@ -305,7 +319,7 @@ export const VisitorsPage: React.FC = () => {
                       {v.status}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-right">
+                  <td className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
                     {v.status === 'INSIDE' && (
                       <button
                         onClick={() => handleRecordExit(v.id)}
@@ -314,6 +328,13 @@ export const VisitorsPage: React.FC = () => {
                         Record Exit
                       </button>
                     )}
+                    <button
+                      onClick={() => handleDeleteVisitor(v.id, v.name)}
+                      title="Delete Visitor Record"
+                      className="p-1 rounded hover:bg-rose-50 text-rose-500 hover:text-rose-700 transition-colors inline-flex items-center"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}

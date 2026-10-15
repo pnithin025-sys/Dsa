@@ -120,12 +120,12 @@ export const getStudentById = async (req: Request, res: Response): Promise<void>
     await dsaService.initialize();
 
     // 1. First check Custom Hash Table: O(1)
-    const hashResult = dsaService.studentHashTable.search(id);
+    const hashResult = dsaService.studentHashTable.search(id as string);
 
     // 2. Fetch full relations from database
     const student = await prisma.student.findFirst({
       where: {
-        OR: [{ id }, { studentId: id }, { regNumber: id }],
+        OR: [{ id: id as string }, { studentId: id as string }, { regNumber: id as string }],
       },
       include: {
         room: { include: { block: true, floor: true } },
@@ -230,7 +230,7 @@ export const updateStudent = async (req: Request, res: Response): Promise<void> 
     const updateData = req.body;
 
     const student = await prisma.student.update({
-      where: { id },
+      where: { id: id as string },
       data: updateData,
       include: { room: true, bed: true },
     });
@@ -259,7 +259,7 @@ export const deleteStudent = async (req: Request, res: Response): Promise<void> 
     const { id } = req.params;
 
     const student = await prisma.student.findUnique({
-      where: { id },
+      where: { id: id as string },
       include: { room: true, bed: true },
     });
 
@@ -274,7 +274,7 @@ export const deleteStudent = async (req: Request, res: Response): Promise<void> 
     }
 
     // Delete record from DB
-    await prisma.student.delete({ where: { id } });
+    await prisma.student.delete({ where: { id: id as string } });
 
     // Remove from in-memory DSA structures
     const dsaService = DSAService.getInstance();

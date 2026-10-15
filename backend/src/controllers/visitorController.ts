@@ -133,7 +133,7 @@ export const recordVisitorExit = async (req: Request, res: Response): Promise<vo
     const { id } = req.params;
 
     const visitor = await prisma.visitor.findFirst({
-      where: { OR: [{ id }, { visitorId: id }] },
+      where: { OR: [{ id: id as string }, { visitorId: id as string }] },
     });
 
     if (!visitor) {
@@ -163,3 +163,21 @@ export const recordVisitorExit = async (req: Request, res: Response): Promise<vo
     res.status(500).json({ success: false, message: 'Failed to record visitor exit.' });
   }
 };
+
+export const deleteVisitor = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const visitor = await prisma.visitor.findFirst({
+      where: { OR: [{ id: String(id) }, { visitorId: String(id) }] },
+    });
+    if (!visitor) {
+      res.status(404).json({ success: false, message: 'Visitor record not found.' });
+      return;
+    }
+    await prisma.visitor.delete({ where: { id: visitor.id } });
+    res.json({ success: true, message: `Visitor log for ${visitor.name} deleted.` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to delete visitor log.' });
+  }
+};
+

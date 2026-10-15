@@ -194,7 +194,7 @@ export const updateMaintenanceStatus = async (req: Request, res: Response): Prom
     const { status } = req.body;
 
     const updated = await prisma.maintenanceRequest.update({
-      where: { id },
+      where: { id: id as string },
       data: {
         status,
         ...(status === 'COMPLETED' && { completedAt: new Date() }),
@@ -217,3 +217,33 @@ export const updateMaintenanceStatus = async (req: Request, res: Response): Prom
     res.status(500).json({ success: false, message: 'Failed to update request.' });
   }
 };
+
+export const deleteMaintenanceRequest = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const request = await prisma.maintenanceRequest.findFirst({
+      where: { OR: [{ id: String(id) }, { requestId: String(id) }] },
+    });
+    if (!request) {
+      res.status(404).json({ success: false, message: 'Maintenance request not found.' });
+      return;
+    }
+    await prisma.maintenanceRequest.delete({ where: { id: request.id } });
+
+    // Re-sync FIFO queue
+    const dsaService = DSAService.getInstance();
+    const pending = await prisma.maintenanceRequest.findMany({
+      where: { status: 'PENDING' },
+      orderBy: { submittedAt: 'asc' },
+    });
+    dsaService.maintenanceQueue.clear();
+    for (const r of pending) {
+      dsaService.maintenanceQueue.enqueue(r);
+    }
+
+    res.json({ success: true, message: `Maintenance request #${request.requestId} deleted.` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to delete maintenance request.' });
+  }
+};
+

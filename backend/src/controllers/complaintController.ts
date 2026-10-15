@@ -110,7 +110,7 @@ export const updateComplaintStatus = async (req: Request, res: Response): Promis
     const { status, priority } = req.body;
 
     const updated = await prisma.complaint.update({
-      where: { id },
+      where: { id: id as string },
       data: {
         ...(status && { status }),
         ...(priority && { priority }),
@@ -122,3 +122,21 @@ export const updateComplaintStatus = async (req: Request, res: Response): Promis
     res.status(500).json({ success: false, message: 'Failed to update complaint status.' });
   }
 };
+
+export const deleteComplaint = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const complaint = await prisma.complaint.findFirst({
+      where: { OR: [{ id: String(id) }, { complaintId: String(id) }] },
+    });
+    if (!complaint) {
+      res.status(404).json({ success: false, message: 'Complaint record not found.' });
+      return;
+    }
+    await prisma.complaint.delete({ where: { id: complaint.id } });
+    res.json({ success: true, message: `Complaint #${complaint.complaintId} deleted successfully.` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to delete complaint.' });
+  }
+};
+

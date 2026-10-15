@@ -15,6 +15,7 @@ import {
   Utensils,
   Sparkles,
   X,
+  Trash2,
 } from 'lucide-react';
 import api from '../services/api';
 import { Complaint } from '../types';
@@ -104,6 +105,19 @@ export const ComplaintsPage: React.FC = () => {
       fetchComplaints();
     } catch (err) {
       alert('Failed to update status.');
+    }
+  };
+
+  const handleDeleteComplaint = async (id: string, ticketNum?: string) => {
+    if (!confirm(`Are you sure you want to delete complaint ticket ${ticketNum || id}?`)) return;
+    try {
+      const res = await api.delete(`/complaints/${id}`);
+      if (res.data.success) {
+        setToastNotice(res.data.message || 'Complaint deleted successfully.');
+        fetchComplaints();
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete complaint.');
     }
   };
 
@@ -249,6 +263,7 @@ export const ComplaintsPage: React.FC = () => {
                 <th className="py-3 px-4">Priority</th>
                 <th className="py-3 px-4">Status & Transition</th>
                 <th className="py-3 px-4">Filed Date</th>
+                <th className="py-3 px-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -309,6 +324,15 @@ export const ComplaintsPage: React.FC = () => {
 
                   <td className="py-3 px-4 text-slate-400 whitespace-nowrap">
                     {new Date(c.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                  </td>
+                  <td className="py-3 px-4 text-right whitespace-nowrap">
+                    <button
+                      onClick={() => handleDeleteComplaint(c.id, c.complaintId)}
+                      title="Delete Grievance Ticket"
+                      className="p-1 rounded hover:bg-rose-50 text-rose-500 hover:text-rose-700 transition-colors inline-flex items-center"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}

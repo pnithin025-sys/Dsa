@@ -722,6 +722,27 @@ export const mockDsaBackend = {
       return { success: true, room: r };
     }
 
+    if (cleanUrl.startsWith('/rooms/') && method.toUpperCase() === 'DELETE') {
+      const id = cleanUrl.replace('/rooms/', '');
+      const idx = db.rooms.findIndex((r: any) => r.id === id || r.roomNumber === id);
+      if (idx !== -1) {
+        const rm = db.rooms[idx];
+        db.students.forEach((s: any) => {
+          if (s.roomId === rm.id) {
+            s.roomId = null;
+            s.bedId = null;
+            s.room = null;
+            s.bed = null;
+          }
+        });
+        db.beds = db.beds.filter((b: any) => b.roomId !== rm.id);
+        db.rooms.splice(idx, 1);
+        saveDb(db);
+        return { success: true, message: `Room ${rm.roomNumber} deleted successfully` };
+      }
+      return { success: false, message: 'Room not found' };
+    }
+
     if (cleanUrl === '/rooms/allocate' && method.toUpperCase() === 'POST') {
       const { studentId, roomId, bedId } = data || {};
       const student = db.students.find((s: any) => s.id === studentId);
@@ -843,6 +864,17 @@ export const mockDsaBackend = {
       return { success: false, message: 'Visitor not found' };
     }
 
+    if (cleanUrl.startsWith('/visitors/') && method.toUpperCase() === 'DELETE') {
+      const id = cleanUrl.replace('/visitors/', '');
+      const idx = db.visitors.findIndex((v: any) => v.id === id || v.visitorId === id);
+      if (idx !== -1) {
+        const removed = db.visitors.splice(idx, 1)[0];
+        saveDb(db);
+        return { success: true, message: `Visitor log for ${removed.name} deleted successfully` };
+      }
+      return { success: false, message: 'Visitor log not found' };
+    }
+
     // 6. Complaints
     if (cleanUrl === '/complaints' && method.toUpperCase() === 'GET') {
       return { success: true, complaints: db.complaints, total: db.complaints.length };
@@ -884,6 +916,17 @@ export const mockDsaBackend = {
         return { success: true, complaint: cmp };
       }
       return { success: true, complaint: cmp };
+    }
+
+    if (cleanUrl.startsWith('/complaints/') && method.toUpperCase() === 'DELETE') {
+      const id = cleanUrl.replace('/complaints/', '');
+      const idx = db.complaints.findIndex((c: any) => c.id === id || c.complaintId === id);
+      if (idx !== -1) {
+        const removed = db.complaints.splice(idx, 1)[0];
+        saveDb(db);
+        return { success: true, message: `Complaint #${removed.complaintId} deleted successfully` };
+      }
+      return { success: false, message: 'Complaint not found' };
     }
 
     // 7. Maintenance (FIFO Queue)
@@ -963,6 +1006,25 @@ export const mockDsaBackend = {
         };
       }
       return { success: false, message: 'Maintenance queue is empty! No pending requests.' };
+    }
+
+    if (cleanUrl.startsWith('/maintenance/') && method.toUpperCase() === 'DELETE') {
+      const id = cleanUrl.replace('/maintenance/', '');
+      const idx = db.maintenance.findIndex((m: any) => m.id === id || m.requestId === id);
+      if (idx !== -1) {
+        const removed = db.maintenance.splice(idx, 1)[0];
+        db.activities.unshift({
+          id: `act_${Date.now()}`,
+          action: 'MAINTENANCE_DELETED',
+          details: `Deleted maintenance request ${removed.requestId || id}`,
+          entityType: 'Maintenance',
+          performedBy: 'Warden',
+          createdAt: new Date().toISOString(),
+        });
+        saveDb(db);
+        return { success: true, message: 'Maintenance request deleted successfully' };
+      }
+      return { success: false, message: 'Maintenance request not found' };
     }
 
     // 8. Hostel Structure (Binary Tree / N-ary Tree)
